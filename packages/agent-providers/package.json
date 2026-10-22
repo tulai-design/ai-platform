@@ -1,0 +1,52 @@
+{
+  "name": "@tulai-design/agent-providers",
+  "version": "0.1.8",
+  "description": "Portable Chat Completions and Responses transports for AI agents",
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./http": {
+      "types": "./dist/http/index.d.ts",
+      "import": "./dist/http/index.js"
+    }
+  },
+  "scripts": {
+    "build": "node ../../scripts/clean-dist.mjs && tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.test.json",
+    "test": "vitest run src",
+    "pack:check": "npm pack --dry-run"
+  },
+  "dependencies": {
+    "@tulai-design/agent-core": "^0.1.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "vitest": "^5.0.1",
+    "@types/node": "^22.18.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tulai-design/ai-platform.git",
+    "directory": "packages/agent-providers"
+  },
+  "homepage": "https://github.com/tulai-design/ai-platform/tree/main/packages/agent-providers#readme",
+  "bugs": {
+    "url": "https://github.com/tulai-design/ai-platform/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "sideEffects": false
+}

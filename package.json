@@ -1,0 +1,29 @@
+{
+  "name": "@tulai-design/ai-platform",
+  "version": "0.1.8",
+  "private": true,
+  "license": "MIT",
+  "description": "Shared AI foundation packages for Tulai Design products",
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": "^22.12.0 || ^24.0.0 || >=26.0.0"
+  },
+  "scripts": {
+    "build": "pnpm --recursive --if-present build",
+    "typecheck": "pnpm --recursive --if-present typecheck",
+    "test": "pnpm --recursive --if-present test",
+    "pack:check": "pnpm --recursive --if-present pack:check",
+    "verify:consumer": "node scripts/verify-packed-consumer.mjs",
+    "check": "pnpm build && pnpm typecheck && pnpm test && pnpm pack:check && pnpm verify:consumer"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "vitest": "^5.0.1",
+    "@types/node": "^22.18.0"
+  },
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tulai-design/ai-platform.git"
+  }
+}

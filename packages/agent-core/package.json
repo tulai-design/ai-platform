@@ -1,0 +1,45 @@
+{
+  "name": "@tulai-design/agent-core",
+  "version": "0.1.8",
+  "description": "Runtime-neutral AI agent execution primitives and host contracts",
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "node ../../scripts/clean-dist.mjs && tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.test.json",
+    "test": "vitest run src",
+    "pack:check": "npm pack --dry-run"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "vitest": "^5.0.1",
+    "@types/node": "^22.18.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tulai-design/ai-platform.git",
+    "directory": "packages/agent-core"
+  },
+  "homepage": "https://github.com/tulai-design/ai-platform/tree/main/packages/agent-core#readme",
+  "bugs": {
+    "url": "https://github.com/tulai-design/ai-platform/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "sideEffects": false
+}
