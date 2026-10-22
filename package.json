@@ -1,6 +1,6 @@
 {
   "name": "@tulai-design/ai-platform",
-  "version": "0.1.8",
+  "version": "0.1.0",
   "private": true,
   "license": "MIT",
   "description": "Shared AI foundation packages for Tulai Design products",

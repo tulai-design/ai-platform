@@ -1,6 +1,6 @@
 {
   "name": "@tulai-design/agent-providers",
-  "version": "0.1.8",
+  "version": "0.1.0",
   "description": "Portable Chat Completions and Responses transports for AI agents",
   "license": "MIT",
   "type": "module",
@@ -26,7 +26,7 @@
     "pack:check": "npm pack --dry-run"
   },
   "dependencies": {
-    "@tulai-design/agent-core": "^0.1.8"
+    "@tulai-design/agent-core": "^0.1.0"
   },
   "devDependencies": {
     "typescript": "^5.9.2",

@@ -1,6 +1,6 @@
 {
   "name": "@tulai-design/agent-core",
-  "version": "0.1.8",
+  "version": "0.1.0",
   "description": "Runtime-neutral AI agent execution primitives and host contracts",
   "license": "MIT",
   "type": "module",
