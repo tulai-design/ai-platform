@@ -53,6 +53,10 @@ semver-compatible core dependency locally; publishable metadata contains no
 See [contribution and validation guidance](CONTRIBUTING.md) and the
 [distribution preparation checklist](docs/publishing.md).
 
+Browser hosts should pass a `fetch` that is already bound to the global scope.
+Passing the bare `fetch` currently fails with `Illegal invocation`; see
+[known issues](docs/known-issues.md).
+
 ## Extraction and consumer rollout
 
 The initial source and tests were extracted from
