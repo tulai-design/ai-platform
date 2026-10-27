@@ -11,7 +11,9 @@ export type RequestBoundaryOptions = {
 /** One application fetch invocation; caller owns URL, auth, timeout and decoding. */
 export async function requestOnce(url: string, init: RequestWire, options: RequestBoundaryOptions): Promise<Response> {
     options.signal?.throwIfAborted();
-    return options.fetchImpl(url, {
+    // A host's native fetch must not receive this options object as its receiver.
+    const {fetchImpl} = options;
+    return fetchImpl(url, {
         ...init,
         signal: options.signal,
         credentials: options.credentials,

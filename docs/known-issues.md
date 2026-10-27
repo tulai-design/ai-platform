@@ -1,7 +1,8 @@
-# 已知问题：fetchImpl 直接传 `fetch` 会报 Illegal invocation
+# 已修复：fetchImpl 直接传 `fetch` 会报 Illegal invocation
 
-状态：**未修复**，影响 `@tulai-design/agent-providers@0.1.0`
+状态：**已修复，将随 `@tulai-design/agent-providers@0.2.0` 发布**。影响旧版 `0.1.0`。
 发现日期：2026-10-22（在搭搭 homepage 接入时发现）
+修复日期：2026-10-27
 
 ## 现象
 
@@ -24,7 +25,7 @@ TypeError: Failed to execute 'fetch' on 'Window': Illegal invocation
 
 ## 原因
 
-`packages/agent-providers/src/http/requestBoundary.ts:14` 以**方法调用**形式使用它：
+旧版 `packages/agent-providers/src/http/requestBoundary.ts` 以**方法调用**形式使用它：
 
 ```ts
 export async function requestOnce(url: string, init: RequestWire, options: RequestBoundaryOptions): Promise<Response> {
@@ -44,7 +45,7 @@ export async function requestOnce(url: string, init: RequestWire, options: Reque
 
 类型标注是 `fetchImpl: typeof fetch`，但 TypeScript 无法表达"这个函数调用时不能带 this"的约束，所以类型检查完全通过。
 
-## 宿主的临时绕法
+## 旧版宿主的临时绕法
 
 包一层箭头函数。箭头函数没有自己的 `this`，内部从 `globalThis` 取，怎么传都不会丢绑定：
 
@@ -59,9 +60,9 @@ await streamChatCompletions(input, {
 
 已验证：包装后请求正常发出（跨域时会得到正常的 `Failed to fetch`，而不是 `Illegal invocation`）。
 
-## 建议的修法
+## 修复方式与回归验证
 
-优先改 provider 内部，把方法调用换成裸调用：
+公共请求边界已将方法调用换成裸调用，适用于 Chat Completions、Responses 和 Messages：
 
 ```ts
 export async function requestOnce(url: string, init: RequestWire, options: RequestBoundaryOptions): Promise<Response> {
@@ -76,10 +77,10 @@ export async function requestOnce(url: string, init: RequestWire, options: Reque
 }
 ```
 
-修完后建议补一条回归测试：传入一个断言 `this` 为 `undefined`/`globalThis` 的假 fetch，确认 provider 内部没有把它当方法调用。
+`providers.test.ts` 新增回归测试：通过构建后的公共导出调用 Chat Completions，传入会拒绝错误 `this` 的假 fetch，确认调用成功且接收者为 `undefined`。测试不会发起真实网络请求。
 
-若暂不修代码，至少在 README 里写明宿主必须传入已绑定 `globalThis` 的 fetch——但这是把内部实现细节推给调用方，不如直接修。
+已有的箭头包装和显式绑定方式仍兼容；升级后不再要求宿主为这个问题额外包装。
 
 ## 影响面
 
-任何在浏览器中直接传原生 `fetch` 的宿主都会踩到。Node 环境下 `fetch` 不校验 `this`，所以本项目现有的测试（都在 Node + 假 fetch 里跑）无法发现这个问题——这是它漏到发布版的直接原因。
+旧版会影响在浏览器中直接传原生 `fetch` 的宿主。Node 环境下 `fetch` 不校验 `this`，原有的 Node 测试没有检查接收者，因此漏掉了这个问题；新增回归直接检查调用约定。

@@ -7,6 +7,38 @@ const response = (output: unknown[]) => Response.json({status: 'completed', outp
 afterEach(() => vi.unstubAllGlobals());
 
 describe('emitted reusable provider exports', () => {
+    it('calls the supplied fetch without binding the request options as its receiver', async () => {
+        const receivers: unknown[] = [];
+        const fetchImpl: typeof fetch = function (this: unknown) {
+            receivers.push(this);
+            if (this !== undefined && this !== globalThis) throw new TypeError('Illegal invocation');
+            return Promise.resolve(Response.json({choices: [{message: {content: 'done'}, finish_reason: 'stop'}]}));
+        };
+        const result = await streamChatCompletions(input, {fetchImpl});
+        expect(result).toMatchObject({ok: true, content: 'done'});
+        expect(receivers).toEqual([undefined]);
+    });
+
+    it('rejects an AiHubMix tool index drift without guessing arguments, returning partial calls, or retrying', async () => {
+        const chunks = [
+            {delta: {role: 'assistant', content: ''}, finish_reason: null},
+            {delta: {content: '', reasoning_details: {type: 'thinking'}}, finish_reason: null},
+            {delta: {content: '', reasoning_details: {type: 'thinking', signature: 'opaque-signature'}}, finish_reason: null},
+            {delta: {tool_calls: [{index: 0, id: 'toolu_one', type: 'function', function: {name: 'get_appearance', arguments: ''}}]}, finish_reason: null},
+            {delta: {tool_calls: [{index: 0, function: {arguments: ''}}]}, finish_reason: null},
+            {delta: {tool_calls: [{index: 1, function: {arguments: '{}'}}]}, finish_reason: 'tool_calls'},
+        ];
+        const body = chunks.map((choice) => `data: ${JSON.stringify({choices: [{index: 0, ...choice}]})}\n\n`).join('')
+            + `data: ${JSON.stringify({choices: [], usage: {prompt_tokens: 10, completion_tokens: 2, total_tokens: 12}})}\n\n`
+            + 'data: [DONE]\n\n';
+        const fetchImpl = vi.fn<typeof fetch>(() => Promise.resolve(new Response(body, {headers: {'content-type': 'text/event-stream'}})));
+        const tools = [{type: 'function' as const, function: {name: 'get_appearance', description: 'Read appearance', parameters: {type: 'object', properties: {}}}}];
+        const result = await streamChatCompletions({...input, model: 'claude-haiku-5-5', tools}, {fetchImpl});
+        expect(result).toMatchObject({ok: false, message: '工具调用参数不是完整 JSON'});
+        expect(result).not.toHaveProperty('toolCalls');
+        expect(fetchImpl).toHaveBeenCalledOnce();
+    });
+
     it('runs request-time host preparation inside one dispatch boundary and never falls back to global fetch', async () => {
         const order: string[] = [];
         const fetchImpl = vi.fn<typeof fetch>(() => {

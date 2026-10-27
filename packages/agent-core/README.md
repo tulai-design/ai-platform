@@ -1,8 +1,7 @@
 # @tulai-design/agent-core
 
-Runtime-neutral Agent execution algorithms and typed host contracts. This
-package is prepared for public distribution; this extraction task has not
-published it to npm.
+Runtime-neutral Agent execution algorithms and typed host contracts, distributed
+as a public ESM package under the `@tulai-design` scope.
 
 The root ESM export includes `executeRun`, `createToolFactory`, approval and tool
 validation, context budget/compaction helpers, capability registration and

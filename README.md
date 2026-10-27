@@ -5,15 +5,14 @@ with a runtime-neutral Agent execution library and portable model protocol
 adapters. Additional platform services can be scoped here in the future;
 `ai-proxy` is not implemented.
 
-**Distribution status:** the packages are prepared for public distribution under
-`@tulai-design/*`, but have not been released by this task. Repository versions
-are preparation metadata, not evidence of an npm release. No automated workflow
-publishes packages.
+The packages are distributed publicly under `@tulai-design/*`. Publication is
+manual; CI validates the exact packed exports and does not publish packages.
+See [release notes](docs/releases/0.2.0.md) and the [publishing checklist](docs/publishing.md).
 
 | Package | Public exports | Responsibility |
 | --- | --- | --- |
 | [`@tulai-design/agent-core`](packages/agent-core) | root | Agent execution, tool contracts, approvals, context compaction, capabilities and text skills |
-| [`@tulai-design/agent-providers`](packages/agent-providers) | root, `/http` | Chat Completions and Responses protocols, continuation and bounded HTTP readers |
+| [`@tulai-design/agent-providers`](packages/agent-providers) | root, `/http` | Chat Completions, Responses and Anthropic Messages protocols, continuation and bounded HTTP readers |
 
 The packages ship ESM JavaScript and TypeScript declarations. Core has no
 runtime dependencies. Providers declares a semver dependency on core and has no
@@ -51,11 +50,11 @@ semver-compatible core dependency locally; publishable metadata contains no
 `workspace:*` version. Generated `dist`, `node_modules` and tarballs are ignored.
 
 See [contribution and validation guidance](CONTRIBUTING.md) and the
-[distribution preparation checklist](docs/publishing.md).
+[publishing checklist](docs/publishing.md).
 
-Browser hosts should pass a `fetch` that is already bound to the global scope.
-Passing the bare `fetch` currently fails with `Illegal invocation`; see
-[known issues](docs/known-issues.md).
+The HTTP boundary calls an injected `fetch` without binding it to the options
+object. Browser hosts may pass native `fetch` or a wrapper; see
+[known issues and resolved fixes](docs/known-issues.md).
 
 ## Extraction and consumer rollout
 
@@ -64,9 +63,8 @@ The initial source and tests were extracted from
 `78533ab247aa01f596eeff1f218ab7cfd3d620ef`. Package imports were renamed from
 `@momoki/*` to `@tulai-design/*`; execution and protocol behavior were preserved.
 
-Momoki continues consuming its existing private workspace packages. Switching
-it, the Tulai homepage or another product to published packages is a later
-coordinated task after an explicit release decision. That work must update
+Momoki continues consuming its existing private workspace packages. The Tulai
+homepage consumes the published packages. Updating either consumer must update
 versions, imports, lockfiles and package-boundary checks together, validate the
 installed public artifacts, and retain a rollback to the existing workspace
 packages. Fixes made in one repository do not automatically reach the other;

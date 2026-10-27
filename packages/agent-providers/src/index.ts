@@ -1,4 +1,6 @@
 export {streamChatCompletions} from './chatCompletions.js';
+export {streamAnthropicMessages, anthropicMessagesUrl} from './anthropicMessages.js';
+export type {AnthropicContentBlock, AnthropicRequestMessage, AnthropicMessagesInput, AnthropicMessagesHandlers, AnthropicMessagesResult} from './anthropicMessages.js';
 export type {StreamChatInput, StreamChatHandlers, StreamChatResult} from './chatCompletions.js';
 export {streamResponses, decodeResponseOutput, toResponseInput} from './responses.js';
 export type {ResponsesInput, ResponsesHandlers, ResponsesResult} from './responses.js';

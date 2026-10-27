@@ -1,8 +1,7 @@
-# Distribution preparation
+# Publishing
 
-The two public package manifests are prepared for the `@tulai-design` scope.
-This repository has not released these packages as part of extraction. A version
-in `package.json` does not establish registry availability or a release promise.
+The two public packages are distributed under the `@tulai-design` scope.
+A version in `package.json` alone does not establish registry availability.
 The root is private; the two library packages have `publishConfig.access: public`.
 
 Before a separately authorized release:
@@ -26,9 +25,15 @@ Before a separately authorized release:
 7. Record the reviewed commit, artifact contents, validation and release notes
    before any explicitly authorized publication or tagging action.
 
-The prepack lifecycle prepares emitted artifacts for ordinary packing. It does
-not run the entire quality gate and does not replace step 4. No CI workflow
+Run the build before packing: these packages have no prepack lifecycle that
+generates emitted artifacts. Packing does not replace step 4. No CI workflow
 publishes, creates releases or changes consumer repositories.
+
+Publish the reviewed tarballs with `npm publish <tarball> --access public`, core
+first, then providers. Verify both versions and dist-tags on the public registry,
+including the providers-to-core dependency, before updating consumers. Record the
+paired release with a `v<version>` Git tag and release notes. If npm requires an
+interactive authentication step, finish it before claiming publication succeeded.
 
 After an actual release, migrate consumers in a separate change: update declared
 versions, imports, lockfiles, workspace/build policies and integration tests, then

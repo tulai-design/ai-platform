@@ -33,7 +33,7 @@ importers:
   packages/agent-providers:
     dependencies:
       '@tulai-design/agent-core':
-        specifier: ^0.1.0
+        specifier: ^0.2.0
         version: link:../agent-core
     devDependencies:
       '@types/node':

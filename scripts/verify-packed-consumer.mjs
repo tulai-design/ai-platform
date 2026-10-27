@@ -104,7 +104,7 @@ try {
     // another package's private source.
     writeFileSync(join(consumer, 'index.ts'), `
 import {MODEL_STEPS_PER_SEGMENT, estimateTokens, normalizeContextPolicy, requiresToolApproval} from '@tulai-design/agent-core';
-import {authHeaders, chatCompletionsUrl} from '@tulai-design/agent-providers';
+import {authHeaders, chatCompletionsUrl, streamAnthropicMessages, anthropicMessagesUrl, type AnthropicMessagesInput, type AnthropicMessagesHandlers, type AnthropicMessagesResult, type AnthropicContentBlock} from '@tulai-design/agent-providers';
 import {normalizeBaseUrl, redactCredentials} from '@tulai-design/agent-providers/http';
 
 const policy = normalizeContextPolicy({historyMessageCount: 12});
@@ -116,7 +116,28 @@ const base: string = normalizeBaseUrl(' https://example.invalid/v1/ ');
 const redacted: string = redactCredentials('Authorization: Bearer sk-test-key', 'sk-test-key');
 const approval: boolean = requiresToolApproval('ask', {effect: 'write', highRisk: () => false}, {});
 
-export const observed = {policy, tokens, steps, headers, url, base, redacted, approval};
+const nativeInput: AnthropicMessagesInput = {
+    baseUrl: 'https://example.invalid', apiKey: 'native-test-key', model: 'claude-haiku-5-5',
+    messages: [{role: 'system', content: 'System prompt'}, {role: 'user', content: 'Hello'}],
+    reasoningEffort: 'medium',
+};
+const nativeBlocks: AnthropicContentBlock[] = [
+    {type: 'thinking', thinking: '', signature: 'exact-opaque-signature'},
+    {type: 'text', text: 'Hello from Messages'},
+];
+const nativeRequests: {url: string; headers: Record<string, string>; body: Record<string, unknown>}[] = [];
+const nativeHandlers: AnthropicMessagesHandlers = {fetchImpl: async (requestUrl, init) => {
+    if (typeof init?.body !== 'string') throw new Error('Expected serialized native request');
+    const headers: Record<string, string> = {};
+    new Headers(init.headers).forEach((value, key) => {headers[key] = value;});
+    nativeRequests.push({url: String(requestUrl), headers, body: JSON.parse(init.body)});
+    return Response.json({id: 'msg_packed_consumer', type: 'message', role: 'assistant', content: nativeBlocks,
+        stop_reason: 'end_turn', usage: {input_tokens: 5, output_tokens: 4}});
+}};
+const nativeResult: AnthropicMessagesResult = await streamAnthropicMessages(nativeInput, nativeHandlers);
+const nativeUrl: string = anthropicMessagesUrl(nativeInput.baseUrl);
+
+export const observed = {policy, tokens, steps, headers, url, base, redacted, approval, nativeBlocks, nativeRequests, nativeResult, nativeUrl};
 `);
 
     writeFileSync(join(consumer, 'tsconfig.json'), JSON.stringify({
@@ -149,6 +170,20 @@ assert.equal(observed.url, 'https://example.invalid/v1/chat/completions');
 assert.equal(observed.base, 'https://example.invalid/v1');
 assert.ok(!observed.redacted.includes('sk-test-key'), 'credential material survived redaction');
 assert.equal(observed.approval, true);
+assert.equal(observed.nativeUrl, 'https://example.invalid/v1/messages');
+assert.equal(observed.nativeRequests.length, 1);
+const nativeRequest = observed.nativeRequests[0];
+assert.equal(nativeRequest.url, observed.nativeUrl);
+assert.equal(nativeRequest.headers['x-api-key'], 'native-test-key');
+assert.equal(nativeRequest.headers['anthropic-version'], '2023-06-01');
+assert.equal(nativeRequest.headers.authorization, undefined);
+assert.equal(nativeRequest.body.system, 'System prompt');
+assert.deepEqual(nativeRequest.body.messages, [{role: 'user', content: [{type: 'text', text: 'Hello'}]}]);
+assert.deepEqual(nativeRequest.body.thinking, {type: 'adaptive'});
+assert.deepEqual(nativeRequest.body.output_config, {effort: 'medium'});
+assert.equal(observed.nativeResult.ok, true);
+assert.equal(observed.nativeResult.content, 'Hello from Messages');
+assert.deepEqual(observed.nativeResult.anthropicContent, observed.nativeBlocks);
 console.log('installed packages type-check and execute correctly');
 `);
 
